@@ -2,61 +2,62 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import joblib
+import os
 
 # Load model and scaler
-model = joblib.load("rf_model.pkl")
-scaler = joblib.load("scaler.pkl")
+base = os.path.dirname(os.path.dirname(__file__)) if "__file__" in globals() else os.getcwd()
+model = joblib.load('rf_model.pkl')
+scaler = joblib.load('scaler.pkl')
 
-# Page Setup
-st.set_page_config(page_title="Network Attack Detector", page_icon="🚨")
-st.title("🚨 Network Attack Detection")
-st.subheader("Check if a network session is safe or suspicious")
+st.set_page_config(page_title="SentinelNet - Network Attack Detector", page_icon="🛡️")
+st.title("🛡️ SentinelNet")
+st.subheader("Intelligent Intrusion Detection using Machine Learning")
 
-st.write("Fill in the connection details to get a real-time attack prediction.")
+st.markdown("Enter the network session details below to analyze if it's **Normal** or **Suspicious**.")
 
-# User Inputs (expert mode only)
-dur = st.slider("🕒 Duration (seconds)", 0.0, 1000.0, 10.0)
-sbytes = st.slider("📤 Bytes sent by source", 0, 5000, 300)
-dbytes = st.slider("📥 Bytes received by destination", 0, 5000, 300)
-sttl = st.slider("⏱️ Source TTL", 0, 255, 64)
-dttl = st.slider("⏱️ Destination TTL", 0, 255, 64)
-smean = st.slider("📦 Avg packet size sent", 0, 1500, 300)
-dmean = st.slider("📦 Avg packet size received", 0, 1500, 300)
+# ----------------------- INPUTS -----------------------
 
-# Build input
-user_input = pd.DataFrame([[dur, sbytes, dbytes, sttl, dttl, smean, dmean]],
-    columns=['dur', 'sbytes', 'dbytes', 'sttl', 'dttl', 'smean', 'dmean'])
+dur = st.slider("🕒 Duration of connection (seconds)", min_value=0.0, max_value=1500.0, value=60.0, help="How long the connection lasted")
 
-scaled_input = scaler.transform(user_input)
+sbytes = st.slider("📤 Bytes sent from your device (sbytes)", 0, 50000, 1000, step=100, help="Total data your device sent during the session")
 
-# Predict
-if st.button("🔍 Check My Connection"):
-    result = model.predict(scaled_input)[0]
+dbytes = st.slider("📥 Bytes received by your device (dbytes)", 0, 50000, 3000, step=100, help="Total data your device received")
 
-    if result == 0:
-        st.success("✅ This connection appears safe (Normal Traffic).")
+sttl = st.slider("⏱️ Source TTL (sttl)", 0, 255, 64, help="Time-To-Live value for packets from your system")
+
+dttl = st.slider("⏱️ Destination TTL (dttl)", 0, 255, 64, help="TTL for packets from the server you connected to")
+
+smean = st.slider("📦 Average packet size sent (smean)", 0, 1500, 300, help="Estimated average size of packets you sent")
+
+dmean = st.slider("📦 Average packet size received (dmean)", 0, 1500, 400, help="Estimated average packet size received")
+
+service = st.selectbox("🌐 Service/Protocol used", ['-', 'http', 'ftp', 'dns', 'smtp', 'ssh', 'ssl'], help="Type of protocol used in the connection")
+
+# ----------------------- ENCODING -----------------------
+
+# Encode service manually (assuming it was LabelEncoded during training)
+service_mapping = {'-': 0, 'dns': 1, 'ftp': 2, 'http': 3, 'smtp': 4, 'ssh': 5, 'ssl': 6}
+service_encoded = service_mapping.get(service, 0)
+
+# Final input array (match training order)
+features = pd.DataFrame([[dur, sbytes, dbytes, sttl, dttl, smean, dmean, service_encoded]],
+    columns=['dur', 'sbytes', 'dbytes', 'sttl', 'dttl', 'smean', 'dmean', 'service'])
+
+# Scale input
+scaled_input = scaler.transform(features)
+
+# ----------------------- PREDICT -----------------------
+
+if st.button("🔍 Analyze Connection"):
+    prediction = model.predict(scaled_input)[0]
+
+    if prediction == 0:
+        st.success("✅ This session appears safe (Normal Traffic).")
     else:
-        st.error("🚨 Potential Attack Detected!")
+        st.error("🚨 Suspicious activity detected! This may be an attack.")
+        st.warning("🧠 Suggestion: Check for unauthorized access, scan attempts, or bot traffic.")
 
-        # Guess likely attack type based on rules
-        possible_types = []
+# ----------------------- FOOTER -----------------------
 
-        if dur < 10 and sbytes < 500 and dbytes < 500 and sttl > 50:
-            possible_types.append("Reconnaissance (scanning or probing)")
-        if dur > 600 and sbytes > 2000 and dbytes < 100:
-            possible_types.append("DoS (Denial of Service)")
-        if sbytes > 4000 and dbytes < 200:
-            possible_types.append("Data Exfiltration or Botnet")
-        if smean > 1000:
-            possible_types.append("Exploitation or Flood attack")
-
-        if possible_types:
-            st.warning("🧠 Likely Attack Type(s):")
-            for attack in possible_types:
-                st.write(f"- ⚠️ {attack}")
-        else:
-            st.info("⚠️ This session matches patterns of known attacks.")
-
-# Footer
 st.markdown("---")
-st.markdown("Made with ❤️ by **Muhammad Saad Sabir** — Powered by ML & Streamlit")
+st.caption("Made with ❤️ by **Muhammad Saad Sabir** | Powered by ML & Streamlit")
