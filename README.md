@@ -89,8 +89,7 @@ SentinelNet started as a manual IDS, built for students, analysts, and researche
 
 ## 🙋 Author
 
-**Muhammad Saad Sabir**  
-Cybersecurity • Data Science • Automation  
+**Muhammad Saad Sabir**    
 🔗 https://linkedin.com/in/msaadsbr
 
 ---
