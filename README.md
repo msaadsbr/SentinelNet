@@ -17,6 +17,15 @@
 
 ---
 
+## 🛡️ Why I Built This
+
+While learning network protocols and analyzing traffic in Wireshark, I wanted a simple way to understand when something abnormal was happening on my system.
+
+SentinelNet started as a manual IDS, built for students, analysts, and researchers. It now provides explainable ML detection and I'm working toward a real-time system for non-technical users.
+
+---
+
+
 ## 🚀 How to Run
 
 ### 1. Clone the Repository
@@ -68,14 +77,6 @@ Then:
    - 🧠 **Heuristic explanation** (e.g., upload imbalance, TTL mismatch)
    - 🧰 **Recommended follow-up actions**
    - 📊 **Feature importance chart**
-
----
-
-## 🛡️ Why I Built This
-
-While learning network protocols and analyzing traffic in Wireshark, I wanted a simple way to understand when something abnormal was happening on my system.
-
-SentinelNet started as a manual IDS, built for students, analysts, and researchers. It now provides explainable ML detection and I'm working toward a real-time system for non-technical users.
 
 ---
 
