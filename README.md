@@ -1,18 +1,19 @@
 
 # 🛡️ SentinelNet
 
-**SentinelNet** is a lightweight, intelligent, machine learning-powered tool for detecting suspicious or malicious network sessions. Inspired by modern Intrusion Detection Systems (IDS), it analyzes key features of a session and tells you whether it’s safe or suspicious — in real-time.
+**SentinelNet** is a lightweight, intelligent intrusion detection prototype that flags suspicious network sessions based on real-world traffic features. Inspired by modern IDS tools, it helps identify potentially malicious behavior and provides interpretability behind the detection.
 
 ---
 
 ## 🔍 Features
 
-- ✅ Detects **Normal vs Attack** traffic from session features
-- 🧠 Uses a trained **Random Forest** model on the UNSW-NB15 dataset
-- ⚙️ Takes in only 8 human-friendly input fields
-- 🚨 Provides clear reasons when traffic looks suspicious
-- 🖥️ Runs locally via **Streamlit**
-- 🔒 Model files are excluded from GitHub for security
+- ✅ Detects **Normal** vs **Suspicious** network sessions
+- 🧠 Powered by a **Random Forest Classifier**
+- 📊 Uses 8 features such as duration, TTL, byte counts, and service type
+- 🔍 Displays **attack probability**, **threat level**, and **detailed reasoning**
+- 📉 Provides a **visual contribution chart** of the input features
+- 🧾 Gives recommended follow-up actions when a session is flagged
+- 🖥️ Built with **Python** and **Streamlit**
 
 ---
 
@@ -20,60 +21,80 @@
 
 ### 1. Clone the Repository
 
-```
+```bash
 git clone https://github.com/msaadsbr/SentinelNet.git
 cd SentinelNet
 ```
 
 ### 2. Install Dependencies
 
-```
+```bash
 pip install -r requirements.txt
 ```
 
-### 3. Add Local Model Files
+### 3. Add the Model Files
 
-Place the following files in the `isAffected/` folder (or update the path if you changed it):
-- `rf_model.pkl` – trained Random Forest model
-- `scaler.pkl` – StandardScaler for input normalization
+Ensure the following files are placed in the same folder or proper path:
+
+- `rf_model.pkl` — Trained Random Forest model
+- `scaler.pkl` — Fitted StandardScaler for input normalization
+  
 
 ### 4. Run the App
 
-```
-python3 -m streamlit run IsAffected/isAffected.py
+```bash
+streamlit run IsAffected/isAffected.py
 ```
 
 ---
 
 ## 🧠 How It Works
 
-The app takes 8 session-level input fields:
+SentinelNet takes 8 key session-level inputs:
 
-- Duration of connection (`dur`)
-- Bytes sent and received (`sbytes`, `dbytes`)
-- TTL values (`sttl`, `dttl`)
-- Average packet sizes (`smean`, `dmean`)
-- Protocol/service used (`service`)
+- `dur` – duration of the session
+- `sbytes`, `dbytes` – bytes sent/received
+- `sttl`, `dttl` – Time-To-Live for packets
+- `smean`, `dmean` – average packet size
+- `service` – service/protocol used (e.g., HTTP, DNS, FTP)
 
-These are passed through a scaler, then into a Random Forest model to predict:
-- ✅ **Normal** (safe session)
-- 🚨 **Attack Detected** (suspicious behavior)
+Then:
 
-It also provides hints like:
-- "High outgoing traffic with little response – possible data exfiltration"
-- "Very short session and few packets – might be scanning"
+1. Normalizes them using a trained `StandardScaler`
+2. Predicts if the session is **suspicious** using a trained **Random Forest**
+3. Displays:
+   - 🧪 **Attack probability**
+   - 🟢/🟠/🔴 **Threat level**
+   - 🧠 **Heuristic explanation** (e.g., upload imbalance, TTL mismatch)
+   - 🧰 **Recommended follow-up actions**
+   - 📊 **Feature importance chart**
+
+---
+
+## 🛡️ Why I Built This
+
+While learning network protocols and analyzing traffic in Wireshark, I wanted a simple way to understand when something abnormal was happening on my system.
+
+SentinelNet started as a manual IDS, built for students, analysts, and researchers. It now provides explainable ML detection and I'm working toward a real-time system for non-technical users.
 
 ---
 
 ## 📊 Dataset Used
 
-> **UNSW-NB15** – Modern cybersecurity dataset for normal and attack traffic. Includes DoS, Exploits, Reconnaissance, etc.
-> [https://research.unsw.edu.au/projects/unsw-nb15-dataset](https://research.unsw.edu.au/projects/unsw-nb15-dataset)
+> **UNSW-NB15** — A modern network dataset with normal and attack traffic  
+> Includes: Exploits, DoS, Reconnaissance, Backdoors, Fuzzers, etc.  
+> [View Dataset](https://research.unsw.edu.au/projects/unsw-nb15-dataset)
 
 ---
+
+## 🙋 Author
+
+**Muhammad Saad Sabir**  
+Cybersecurity • Data Science • Automation  
+🔗 https://linkedin.com/in/msaadsbr
 
 ---
 
 ## ⚠️ Disclaimer
 
-This tool is for **educational and research purposes only**. It does not replace enterprise-grade security tools.
+This tool is for **educational and research purposes** only. It is not intended as a full production-grade IDS/IPS.
